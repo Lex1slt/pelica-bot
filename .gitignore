@@ -1,0 +1,44 @@
+# 密钥与本地配置——绝不提交
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+
+# 运行时数据
+data/
+logs/
+outbox/
+analysis/
+
+# 语料本体太大，不入库（服务器上另行挂载/同步）
+corpus/
+
+# Node
+bridges/wechaty/node_modules/
+bridges/wechaty/*.log
+
+# 编辑器/系统
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# 安装包与大型下载
+downloads/
+*.mp4
+*.exe
+wx4110/
+
+# 发布产物（打包脚本生成，上传到 Release 而非仓库）
+dist/
+
+# 个人运维笔记（不发布）
+WAKEUP.md
+NIGHT_REPORT.md
+
+# 本机安全扫描台账（工具产物，不入库）
+.mimosa/

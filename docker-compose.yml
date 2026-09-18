@@ -1,0 +1,18 @@
+services:
+  pelica:
+    build: .
+    image: pelica-bot:latest
+    container_name: pelica-bot
+    restart: unless-stopped
+    env_file: .env
+    stop_grace_period: 30s
+    volumes:
+      - ./data:/app/data            # SQLite、抖音下载缓存、心跳文件
+      - ./logs:/app/logs            # 滚动日志
+      - ./corpus:/app/corpus:ro     # 语料只读挂载
+    environment:
+      # 容器内时区必须与 .env 的 TIMEZONE 一致，否则周五 18:00 会错位
+      TZ: Asia/Shanghai
+    # 如需从宿主机观察桥接状态，可取消注释：
+    # ports:
+    #   - "127.0.0.1:9000:9000"

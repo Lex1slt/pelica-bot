@@ -1,0 +1,24 @@
+# 密钥绝不进镜像
+.env
+
+# 本地运行产物
+data/
+logs/
+outbox/
+analysis/
+corpus/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node
+bridges/wechaty/node_modules/
+bridges/wechaty/pelica-session*
+bridges/wechaty/*.log
+
+# 杂项
+.git/
+.vscode/
+README.md
+NIGHT_REPORT.md

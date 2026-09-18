@@ -1,0 +1,15 @@
+{
+  "name": "pelica-wechaty-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "佩丽卡监督 的 Wechaty(PadLocal) 桥接端，与 Python 主进程通过 JSON 行管道通信",
+  "main": "bridge.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "wechaty": "^1.20.5",
+    "wechaty-puppet-padlocal": "^1.22.1",
+    "file-box": "^1.4.15"
+  }
+}

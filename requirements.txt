@@ -1,0 +1,6 @@
+python-dotenv>=1.0
+requests>=2.31
+tzdata>=2024.1
+jieba>=0.42.1
+curl_cffi>=0.7
+opencv-python-headless>=4.9

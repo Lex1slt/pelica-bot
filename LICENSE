@@ -1,0 +1,29 @@
+MIT License
+
+Copyright (c) 2026 佩丽卡监督项目贡献者
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+----
+第三方组件说明：
+- vendor/pyweixin（LGPL-2.1）：微信 4.1+ PC 客户端 UI 自动化模块，源自
+  Hello-Mr-Crab/pywechat 项目衍生代码。
+- 明日方舟／鹰角网络：本项目与鹰角网络无关联，游戏素材版权归鹰角网络所有，
+  语料数据来自 PRTS 社区整理的公开资料（PRTS.Terrachive）。
+- 使用本项目产生的账号风险（微信 ToS）由使用者自行承担。
