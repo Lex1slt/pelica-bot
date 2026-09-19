@@ -238,6 +238,30 @@ def looks_like_offtopic(text: str) -> bool:
     return any(h in t for h in OFFTOPIC_HINTS)
 
 
+# 人身攻击/辱骂：首次人设化回应一次，反复刷就沉默——不陪玩、不进记忆
+INSULT_HINTS = ("操你", "草你", "肏你", "艹你", "你妈", "傻逼", "煞笔", "沙比",
+                "nmsl", "nm$l", "去死", "滚蛋", "废物", "白痴", "弱智", "智障",
+                "垃圾", "狗屎", "滚吧", "闭嘴")
+
+REPLY_INSULT = [
+    "……有事说事。这种话我当没听见。",
+    "情绪收到了。想聊剧情，随时。",
+    "这话我不接。有正事说正事，没有就算了。",
+    "骂人解决不了问题。我在这儿，有事你说话。",
+]
+
+# 单人刷屏限制：5 分钟内太多次对话，温和建议后暂停一会
+REPLY_SPAM_LIMIT = [
+    "今天先聊到这吧，我去看文书了。",
+    "你先歇会儿，我这边也得干活了。",
+]
+
+
+def looks_like_insult(text: str) -> bool:
+    t = text.lower()
+    return any(h in t for h in INSULT_HINTS)
+
+
 def find_forbidden(text: str) -> list[str]:
     hits = []
     for pattern in FORBIDDEN_PATTERNS:

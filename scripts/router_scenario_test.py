@@ -120,4 +120,43 @@ n = len(ans.calls)
 bot._process(m("@张三 罗德岛搬空了吗", sender="u5"))
 assert len(ans.calls) == n, ans.calls
 
-print("ROUTER-SCENARIO-OK 9/9")
+# 10) 辱骂（点名）：第一次人设化回应一次，不调 LLM
+Clock.t += 5
+n = len(ans.calls)
+bot._process(m("@佩丽卡监督 操你妈", sender="u9"))
+assert len(ans.calls) == n, ans.calls          # 不走 LLM
+assert len(sent) > 0 and sent[-1][0] == "r1"   # 但回了一句
+assert "r1" not in bot._pending                # 不进待拾取
+h_before = len(bot._history.get("r1", ()))
+
+# 11) 24h 内再犯 → 完全沉默
+Clock.t += 30
+n_sent = len(sent)
+bot._process(m("@佩丽卡监督 操你妈", sender="u9"))
+bot._process(m("@佩丽卡监督 操你妈", sender="u9"))
+assert len(sent) == n_sent, sent
+assert len(bot._history.get("r1", ())) == h_before  # 不进历史
+
+# 12) 群友互相骂（没点名）→ 不掺和
+Clock.t += 30
+n_sent = len(sent)
+bot._process(m("你就是个傻逼", sender="u10"))
+assert len(sent) == n_sent, sent
+
+# 13) 单人 LLM 限流：连续 8 问后沉默（走 _answer 需要每次被点名）
+bot2 = R.GroupBot(
+    bridge=FakeBridge(), db=None, answerer=FakeAnswerer(), qa_cache=None,
+    douyin=None, whitelist=None, at_aliases=["佩丽卡监督", "佩丽卡"],
+    social=None, matcher=FakeMatcher([]),
+)
+ans2 = bot2._answerer
+Clock.t += 99999
+for i in range(R.MAX_LLM_PER_SENDER):
+    bot2._process(m(f"@佩丽卡监督 问题{i}", sender="u20", is_at=True))
+    Clock.t += 3  # 推过 2 秒群冷却，确保每一问都真到达 LLM
+assert len(ans2.calls) == R.MAX_LLM_PER_SENDER, len(ans2.calls)
+Clock.t += 3
+bot2._process(m("@佩丽卡监督 再问一个", sender="u20", is_at=True))
+assert len(ans2.calls) == R.MAX_LLM_PER_SENDER, len(ans2.calls)  # 第 9 问沉默
+
+print("ROUTER-SCENARIO-OK 13/13")

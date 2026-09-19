@@ -52,6 +52,8 @@ AUTO_JOIN_ROOM_COOLDOWN = 300.0   # 同群两次自发插话最小间隔
 AUTO_JOIN_SENDER_COOLDOWN = 60.0  # 同一人被自发搭话的最小间隔
 AUTO_JOIN_MIN_LEN = 4         # 太短不像话题
 AUTO_JOIN_MAX_LEN = 120       # 太长像私聊记录/转发，不掺和
+MAX_LLM_PER_SENDER = 8        # 单人 5 分钟窗口内 LLM 回复上限（防刷屏烧 token）
+_LLM_WINDOW_SECONDS = 300.0
 _FOLLOWUP_RE = re.compile(
     r"什么关系|关系是|为什么|怎么|如何|是谁|什么来头|什么背景|哪来的|出自哪"
     r"|对吧|对吗|是吗|真的吗|还有|所以|然后|继续|接着|再说说|展开|讲讲|聊聊"
@@ -93,6 +95,8 @@ class GroupBot:
         self._last_followup: dict[str, float] = {}    # sender_id -> 上次无 @ 追问
         self._last_autojoin_room: dict[str, float] = {}
         self._last_autojoin_sender: dict[str, float] = {}
+        self._insult_strikes: dict[tuple[str, str], list[float]] = {}  # (群,人)->时刻
+        self._llm_calls_sender: dict[str, list[float]] = {}  # 单人 LLM 调用限流
 
     # -- 入口 ---------------------------------------------------------------
 
@@ -159,6 +163,13 @@ class GroupBot:
         text = msg.text.strip()
         convo_open = now < self._convo_until.get(room_id, 0)
 
+        # 1.5) 人身攻击（仅限点名机器人的场合——群友互相骂不归它管）：
+        #     首次回应一次，24h 内再犯一律沉默。
+        #     不调模型、不进历史/缓存/待拾取——陪骂只会喂养刷屏的人
+        if self._is_at_me(msg) and persona.looks_like_insult(text):
+            self._handle_insult(msg, now)
+            return
+
         # 2) 被 @ / 喊名：正席问答
         if self._is_at_me(msg):
             question = self._extract_question(msg.text)
@@ -178,7 +189,8 @@ class GroupBot:
             return  # 空/链接/在 @ 别人：不掺和
 
         # 3) 连续对话窗口内：像追问的短消息直接接，其余短消息缓存待拾取
-        if convo_open and len(text) <= PENDING_MAX_LEN:
+        if (convo_open and len(text) <= PENDING_MAX_LEN
+                and not persona.looks_like_insult(text)):
             looks_followup = bool(
                 _FOLLOWUP_RE.search(text) or text.endswith(("？", "?", "吗", "呢", "么"))
             )
@@ -240,6 +252,13 @@ class GroupBot:
             msg.sender_id, 0
         ) < REPLY_COOLDOWN_SENDER:
             return
+        # 单人 LLM 限流：5 分钟窗口内最多 MAX_LLM_PER_SENDER 次，防 token 被刷爆
+        calls = [t for t in self._llm_calls_sender.get(msg.sender_id, ())
+                 if now - t < _LLM_WINDOW_SECONDS]
+        if len(calls) >= MAX_LLM_PER_SENDER:
+            return  # 超限直接沉默——再回一句反而又给了互动
+        calls.append(now)
+        self._llm_calls_sender[msg.sender_id] = calls
 
         # 检索 + LLM（带每群最近几轮上下文与社交记忆，闲聊/追问都接得住）
         history = list(self._history.get(room_id, ()))
@@ -301,6 +320,20 @@ class GroupBot:
             self._pending.pop(room_id, None)
             return pend[1], pend[2], pend[3]
         return None
+
+    def _handle_insult(self, msg: Message, now: float) -> None:
+        """辱骂打击：24h 滚动窗口计数；第一次人设化回应一次，之后沉默。
+
+        不调模型、不写 history/_pending/缓存——骂声与回骂都不留给后续对话，
+        陪骂只会喂养刷屏的人。
+        """
+        key = (msg.room_id, msg.sender_id)
+        strikes = [t for t in self._insult_strikes.get(key, ())
+                   if now - t < 86400.0]
+        strikes.append(now)
+        self._insult_strikes[key] = strikes
+        if len(strikes) == 1:
+            self._reply(msg.room_id, persona.pick(persona.REPLY_INSULT))
 
     def _followup_allowed(self, msg: Message, now: float) -> bool:
         if now - self._last_bot_reply.get(msg.room_id, 0) < REPLY_COOLDOWN_ROOM:
