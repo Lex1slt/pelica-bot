@@ -52,6 +52,16 @@ class WeChatHookBridge(Bridge):
         video_xml_path: Path | None = None,       # 缓存的可转发视频消息 XML
     ):
         self._api = api_url.rstrip("/")
+        # hook 服务只可能跑在本机：拒绝一切非回环地址，防配置被改成 SSRF 跳板
+        from urllib.parse import urlparse
+
+        parsed = urlparse(self._api)
+        if parsed.scheme not in ("http", "https") or (
+            parsed.hostname or ""
+        ) not in ("127.0.0.1", "localhost", "::1"):
+            raise WeChatHookError(
+                f"WXHOOK_API_URL 必须指向本机 hook 服务（http://127.0.0.1:30001），当前：{api_url}"
+            )
         self._groups = [g for g in (groups or [])]
         self._at_aliases = at_aliases or []
         self._poll_interval = poll_interval

@@ -278,33 +278,3 @@ class ABogus:
         string_2 = self.generate_string_2(urlencode(url_params))
         string = string_1 + string_2
         return self.generate_result(string, "s4")
-
-
-if __name__ == "__main__":
-    import requests
-
-    url = "https://www.douyin.com/aweme/v1/web/comment/list/"
-
-    headers = {
-        'user-agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
-        'Cookie': "fpk1=U2FsdGVkX186CR89ZXpoAMmaWzl1I0OMzLbd3k5Ke+zaxHQzUtWTcdL0dTi909o5Er88gKdm/0UEPDw/M7fxoQ==; fpk2=10f9287deaf609ee36fb37783f2b89c0; MONITOR_WEB_ID=e5bc01c8-6fda-4f9f-9bcc-811b865bdfdf; dy_swidth=1440; dy_sheight=900; s_v_web_id=verify_lyo3vs0m_FPkMVLtG_qXLO_4izH_AKGe_AAcvwnBlgReR; xgplayer_user_id=958949402679; passport_csrf_token=0df014450ec1230ed78dd3a462c1d111; passport_csrf_token_default=0df014450ec1230ed78dd3a462c1d111; bd_ticket_guard_client_web_domain=2; d_ticket=d98fc4f96cad7361fa798e99a7f3a7b79b395; n_mh=9-mIeuD4wZnlYrrOvfzG3MuT6aQmCUtmr8FxV8Kl8xY; _bd_ticket_crypt_doamin=2; __security_server_data_status=1; UIFID=96cd3b166f3029d7c1cc3f64582454ab8a83ff1f9e6d6689076dd47ef1dca5f8ff0fa73d12fd1a4324d25e9f7616090a09d42a755a3dd58ad357d4e256935cb12f596f69b1c22ab17ea36abb7558840138089ffdca33cc52237735670a6d099dbcede8982a67db8b45bdf63b17129f95a84dd2695dcfd4538bfb150671290e0e4d286b737c33e98642c28e0bee8c28a1c336c12e63cdb779c7216706477a3ac0; store-region=cn-gd; store-region-src=uid; SEARCH_RESULT_LIST_TYPE=%22single%22; publish_badge_show_info=%220%2C0%2C0%2C1723771427502%22; passport_assist_user=ClCArZPxkLDO5hTV1M1bAwKc87R-3eRHbX1p1IMaj1FH7XXF3g3Xx5qSZCyF93J_BqrPCzLQx9TUOncE0kUNNCLa2Mq545ojGmOfLV9gMFp-PhpKCjzM9w7qj9ibK1x7pO4CJOgB1Q0V8q8adbZIN0YvE00r2G3bogNmsXso9NdlTZoQHmbIfVC5Bx_c8r5Cgc8Q1ubZDRiJr9ZUIAEiAQNbvhaG; sso_uid_tt=5648e665286473d9312555c786e8b938; sso_uid_tt_ss=5648e665286473d9312555c786e8b938; toutiao_sso_user=7c249d923596e82e13b91c32259cb3ac; toutiao_sso_user_ss=7c249d923596e82e13b91c32259cb3ac; sid_ucp_sso_v1=1.0.0-KDNiZTJhNTlkZTUwOGNiOWEyMjMyYWJiNThjNzNjZWEzZDA1MGUwNzUKIQiZn8CP_cyJBhCUrYy2BhjaFiAMMP6-9LMGOAZA9AdIBhoCbHEiIDdjMjQ5ZDkyMzU5NmU4MmUxM2I5MWMzMjI1OWNiM2Fj; ssid_ucp_sso_v1=1.0.0-KDNiZTJhNTlkZTUwOGNiOWEyMjMyYWJiNThjNzNjZWEzZDA1MGUwNzUKIQiZn8CP_cyJBhCUrYy2BhjaFiAMMP6-9LMGOAZA9AdIBhoCbHEiIDdjMjQ5ZDkyMzU5NmU4MmUxM2I5MWMzMjI1OWNiM2Fj; passport_auth_status=3f7bdeb34204c6b6c768f312167ff14e%2C7b30a36bea0b1b8bd4f22a7cb91c5fc9; passport_auth_status_ss=3f7bdeb34204c6b6c768f312167ff14e%2C7b30a36bea0b1b8bd4f22a7cb91c5fc9; uid_tt=8e505222f0ab11f3b95d4eacf1758cb9; uid_tt_ss=8e505222f0ab11f3b95d4eacf1758cb9; sid_tt=2412b0382070af41fee91e8674dac441; sessionid=2412b0382070af41fee91e8674dac441; sessionid_ss=2412b0382070af41fee91e8674dac441; is_staff_user=false; _bd_ticket_crypt_cookie=5946528a7bdbcbefa304ee84c4404c6d; sid_guard=2412b0382070af41fee91e8674dac441%7C1724061337%7C5183998%7CFri%2C+18-Oct-2024+09%3A55%3A35+GMT; sid_ucp_v1=1.0.0-KDJlN2MzNjVlZDJlZDYyMGJlYTQ1NTJiZmRlOWU5NDE0MTdjZDI0NjcKGwiZn8CP_cyJBhCZrYy2BhjaFiAMOAZA9AdIBBoCaGwiIDI0MTJiMDM4MjA3MGFmNDFmZWU5MWU4Njc0ZGFjNDQx; ssid_ucp_v1=1.0.0-KDJlN2MzNjVlZDJlZDYyMGJlYTQ1NTJiZmRlOWU5NDE0MTdjZDI0NjcKGwiZn8CP_cyJBhCZrYy2BhjaFiAMOAZA9AdIBBoCaGwiIDI0MTJiMDM4MjA3MGFmNDFmZWU5MWU4Njc0ZGFjNDQx; download_guide=%223%2F20240819%2F0%22; pwa2=%220%7C0%7C3%7C0%22; strategyABtestKey=%221724127823.468%22; live_use_vvc=%22false%22; volume_info=%7B%22isUserMute%22%3Afalse%2C%22isMute%22%3Afalse%2C%22volume%22%3A0.916%7D; WallpaperGuide=%7B%22showTime%22%3A1724064333265%2C%22closeTime%22%3A0%2C%22showCount%22%3A1%2C%22cursor1%22%3A28%2C%22cursor2%22%3A0%7D; xgplayer_device_id=63734066109; ttwid=1%7C0AN03LaYH76stp4N3B4bDKz38WwE4CxtKAWIZQqtY6Q%7C1724159187%7C51ea6b5b3f0bf1b76c0e457981383ef33cfc4fb7522936d941ffd610f7b497c5; __ac_nonce=066c4951400b80971a26d; __ac_signature=_02B4Z6wo00f01jgfO1QAAIDBauAbTNbav-o4Pz.AAOjRde; douyin.com; xg_device_score=6.582795705874107; device_web_cpu_core=8; device_web_memory_size=8; IsDouyinActive=true; stream_recommend_feed_params=%22%7B%5C%22cookie_enabled%5C%22%3Atrue%2C%5C%22screen_width%5C%22%3A1440%2C%5C%22screen_height%5C%22%3A900%2C%5C%22browser_online%5C%22%3Atrue%2C%5C%22cpu_core_num%5C%22%3A8%2C%5C%22device_memory%5C%22%3A8%2C%5C%22downlink%5C%22%3A10%2C%5C%22effective_type%5C%22%3A%5C%224g%5C%22%2C%5C%22round_trip_time%5C%22%3A150%7D%22; csrf_session_id=afc079389b055789ba0f12848acfd3ac; FOLLOW_LIVE_POINT_INFO=%22MS4wLjABAAAAEoxCnzxeQ2fa7kU_dR1hd9DpO0JhZUsvylhN2HCipPccgJhmy1R-GjDYepR4MPE6%2F1724169600000%2F0%2F0%2F1724159855456%22; FOLLOW_NUMBER_YELLOW_POINT_INFO=%22MS4wLjABAAAAEoxCnzxeQ2fa7kU_dR1hd9DpO0JhZUsvylhN2HCipPccgJhmy1R-GjDYepR4MPE6%2F1724169600000%2F0%2F0%2F1724160455457%22; stream_player_status_params=%22%7B%5C%22is_auto_play%5C%22%3A1%2C%5C%22is_full_screen%5C%22%3A0%2C%5C%22is_full_webscreen%5C%22%3A0%2C%5C%22is_mute%5C%22%3A0%2C%5C%22is_speed%5C%22%3A1%2C%5C%22is_visible%5C%22%3A1%7D%22; bd_ticket_guard_client_data=eyJiZC10aWNrZXQtZ3VhcmQtdmVyc2lvbiI6MiwiYmQtdGlja2V0LWd1YXJkLWl0ZXJhdGlvbi12ZXJzaW9uIjoxLCJiZC10aWNrZXQtZ3VhcmQtcmVlLXB1YmxpYy1rZXkiOiJCT21wSldjcjdzNUpjRnRiSWdJQjdrZ05xVTg5MEZseWkvR3kvRzNDZnQyY09laGVaM3BoTy95OFNEckREVFBrYmxrdHFNeHA5T3NYeHZsb2R4TCtoc3M9IiwiYmQtdGlja2V0LWd1YXJkLXdlYi12ZXJzaW9uIjoxfQ%3D%3D; passport_fe_beating_status=true; home_can_add_dy_2_desktop=%221%22; odin_tt=a7df12e8c1da1ce62eb9af6ebd3a8c3ec4d1ea769e22440ae984414db4d32305e88c73a5df358818687b608c2d1b2dfc"
-    }
-
-    params = {
-        "aweme_id": "7400044629845970202",
-        "cursor": "0",
-        "count": "20",
-    }
-
-    bogus = ABogus(headers['user-agent'])
-
-    a_bogus = bogus.generate_a_bogus(params)
-    print(a_bogus)
-
-    params['a_bogus'] = a_bogus
-    response = requests.get(url, params=params, headers=headers)
-
-    print(response.text)
-
-    user_agent_11 = "Mozilla/5.0"
-    print(bogus.generate_ua_code(user_agent_11))

@@ -30,6 +30,16 @@ LINES_PER_ENTITY = 80
 FTS_TOP_K = 25
 MAX_SNIPPETS = 10
 MAX_PER_DOC = 4
+HEAD_SLOTS = 6              # 前 6 席每文档最多 HEAD_PER_DOC 条，逼出多篇章覆盖
+HEAD_PER_DOC = 2
+
+# 「如何评价/喜欢/印象」这类问题要的是角色的多侧面故事，不是档案摘要复读
+_EVAL_HINTS = ("如何评价", "评价", "怎么样", "喜欢", "印象", "看法", "怎么看",
+               "是谁", "介绍一下", "介绍", "什么人", "性格", "为人")
+
+
+def _is_eval_question(question: str) -> bool:
+    return any(h in question for h in _EVAL_HINTS)
 MAX_SEED_IDS = 30
 OVERLAY_WEIGHT = 0.6       # 每个问题词在行文中出现的加成
 OVERLAY_MAX_TOKENS = 4
@@ -254,6 +264,7 @@ class Retriever:
             id_to_name.setdefault(n.entity_id, self._entity_name(n.entity_id))
 
         qtokens = [t for t in tokenize(question) if len(t) >= 2 and t not in _STOPWORDS]
+        eval_q = _is_eval_question(question)
         candidates: dict[int, Snippet] = {}
         for node in ranked:
             rows = self._db.query(
@@ -279,12 +290,13 @@ class Retriever:
                 if r["speaker"] and r["speaker"] in name:
                     score += 0.3
                 if r["line_type"] in ("dialogue", "voice", "sns"):
-                    score += 0.2
+                    score += 0.4 if eval_q else 0.2
                 if r["speaker"]:
                     score += 0.3  # 有说话人的台词是第一手证据
                 text = r["text"]
                 if r["line_type"] == "knowledge" or text.startswith("##"):
-                    score *= 0.75  # 知识摘要行有用，但不应压过原文台词
+                    # 评价类问题要角色的故事，不是档案摘要复读——加重压低
+                    score *= 0.4 if eval_q else 0.75
                 sid = r["line_id"]
                 if sid not in candidates or score > candidates[sid].score:
                     candidates[sid] = Snippet(
@@ -379,18 +391,28 @@ class Retriever:
         for s in snippets:
             s.before, s.after = self._context(s.doc_id, s.line_number)
 
-        # 文档多样性：同文档最多 MAX_PER_DOC 条
+        # 文档多样性：前 HEAD_SLOTS 席每文档最多 HEAD_PER_DOC 条（多篇章覆盖），
+        # 剩余席位放宽到 MAX_PER_DOC
         snippets.sort(key=lambda s: s.score, reverse=True)
         per_doc: dict[str, int] = {}
         picked: list[Snippet] = []
+        picked_ids: set[int] = set()
         for s in snippets:
-            n = per_doc.get(s.doc_id, 0)
-            if n >= MAX_PER_DOC:
+            if len(picked) >= HEAD_SLOTS:
+                break
+            if per_doc.get(s.doc_id, 0) >= HEAD_PER_DOC:
                 continue
-            per_doc[s.doc_id] = n + 1
+            per_doc[s.doc_id] = per_doc.get(s.doc_id, 0) + 1
             picked.append(s)
+            picked_ids.add(id(s))
+        for s in snippets:
             if len(picked) >= MAX_SNIPPETS:
                 break
+            if id(s) in picked_ids or per_doc.get(s.doc_id, 0) >= MAX_PER_DOC:
+                continue
+            per_doc[s.doc_id] = per_doc.get(s.doc_id, 0) + 1
+            picked.append(s)
+            picked_ids.add(id(s))
         return picked
 
     def _context(self, doc_id: str, line_number: int) -> tuple[str, str]:

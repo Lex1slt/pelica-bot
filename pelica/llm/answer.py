@@ -37,7 +37,8 @@ def _now_hint() -> str:
         seg = "晚上"
     else:
         seg = "深夜"
-    return f"【现在】{seg} {h} 点多（以此为准，不要自己想象时间）"
+    return (f"【现在】{seg} {h} 点多。这只是帮你理解语境的背景信息："
+            "对方不提时间、作息，你就绝不要主动提。")
 
 
 def build_evidence_block(evidence: Evidence) -> str:
@@ -83,7 +84,12 @@ class Answerer:
         )
         if social:
             user_content += f"\n【这个群和这位管理员的近况】\n{social}\n"
-        user_content += f"\n用佩丽卡的口吻回答。资料里没有的，就按人设说不清楚。\n{_now_hint()}"
+        user_content += (
+            "\n用佩丽卡的口吻回答。资料往往来自不同篇章：回答尽量综合多个侧面"
+            "（经历、关系、名场面、她自己的感受），不要只围着排最前的那一条打转；"
+            "资料里没有的，就按人设说不清楚。"
+            f"\n{_now_hint()}"
+        )
         messages = (
             [{"role": "system", "content": persona.PERSONA_SYSTEM}]
             + _history_messages(history)
@@ -148,6 +154,14 @@ class Answerer:
                 retrieval_query = f"{question} {history[-1][0]}"
 
         evidence = self.retrieve(retrieval_query)
+
+        # 对具体角色的看法/喜好（「你喜欢庄方宜吗」）：不算纯社交闲聊——
+        # 有实体证据就放行走检索路径。否则会掉进自由对话只能复述历史，
+        # 两次问同一个角色得到雷同回答。
+        if (not evidence.covered and evidence.entity_names
+                and evidence.snippets and persona.looks_like_social(question)):
+            evidence.covered = True
+            evidence.reason += "；观点类问题放宽守门"
 
         if not evidence.covered:
             # 社交/日常话题（没碰到语料实体，或明确带社交信号）-> 自由对话
