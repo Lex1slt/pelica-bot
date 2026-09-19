@@ -64,9 +64,14 @@ class Settings:
     # 日志
     log_level: str = "INFO"
 
+    # 角色包（characters/<id>.toml + .persona.md），由 pelica.character.apply_character 应用
+    character: str = "pelica"
+    character_pack: dict = None  # type: ignore[assignment]
+    _db_override: Path | None = None
+
     @property
     def db_path(self) -> Path:
-        return self.data_dir / "pelica.db"
+        return self._db_override or (self.data_dir / "pelica.db")
 
     @property
     def wechaty_dir(self) -> Path:
@@ -136,4 +141,5 @@ def load_settings(env_file: Path | None = ..., environ: dict | None = None) -> S
         alert_webhook_url=get("ALERT_WEBHOOK_URL"),
         alert_failure_threshold=int(get("ALERT_FAILURE_THRESHOLD", "3")),
         log_level=get("LOG_LEVEL", "INFO").upper(),
+        character=get("CHARACTER", "pelica").strip() or "pelica",
     )

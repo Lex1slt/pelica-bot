@@ -30,9 +30,17 @@ def main() -> int:
         default="",
         help="release 目录名（默认取 corpus/releases 下最新一个）",
     )
+    parser.add_argument("--db", default="", help="目标数据库路径（默认按角色包/配置）")
     args = parser.parse_args()
 
     settings = load_settings()
+    from pelica.character import apply_character
+    apply_character(settings)
+    if args.db:  # 显式 --db 优先于角色包
+        from pathlib import Path as _P
+
+        p = _P(args.db)
+        settings._db_override = p if p.is_absolute() else (_P.cwd() / p)
     setup_logging(settings.log_dir, settings.log_level)
 
     corpus_root = settings.corpus_dir

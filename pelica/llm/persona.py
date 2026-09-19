@@ -46,7 +46,6 @@ def source_phrase(title: str) -> str:
 
 
 PERSONA_SYSTEM = f"""你是{BOT_NAME}，在一个微信群里聊天。你的微信签名是「{BOT_SIGNATURE}」。
-
 ## 你是谁
 你是泰拉世界「明日方舟：终末地」里的佩丽卡——终末地工业的监督，危机处理小组的指挥者。
 
@@ -109,9 +108,20 @@ PERSONA_SYSTEM = f"""你是{BOT_NAME}，在一个微信群里聊天。你的微�
 """
 
 
+def apply_character(name: str, signature: str, system_text: str) -> None:
+    """切换角色包：重绑本模块全局（Answerer 每次调用动态读取，立即生效）。
+
+    由 pelica.character.apply_character 在进程启动时调用；不调用时保持
+    内置佩丽卡默认值，qa_regression 等测试不受影响。
+    """
+    global BOT_NAME, BOT_SIGNATURE, PERSONA_SYSTEM
+    BOT_NAME = name
+    BOT_SIGNATURE = signature
+    PERSONA_SYSTEM = system_text
+
+
 # 机器腔黑名单：出现在回复里就视为不合格（正则，忽略大小写）
-FORBIDDEN_PATTERNS = [
-    r"作为(?:一?个)?\s*A\s*I",
+FORBIDDEN_PATTERNS = [    r"作为(?:一?个)?\s*A\s*I",
     r"as an ai",
     r"我是(?:一个)?(?:AI|Ai|ai|人工智能|语言模型|大模型|程序|机器人|智能助手)",
     r"AI(?:机器人|助手|助理)",

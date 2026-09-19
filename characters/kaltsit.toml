@@ -1,0 +1,16 @@
+# 示例角色包：凯尔希（明日方舟）。复用 pelica 的同一套语料库，只换人设。
+# 启用：.env 里设 CHARACTER=kaltsit，然后 python scripts/build_db.py 建库即可。
+
+[character]
+id = "kaltsit"
+display_name = "凯尔希"
+wechat_name = "凯尔希"
+signature = "罗德岛医疗主管"
+at_aliases = ["凯尔希", "Kal'tsit"]
+# 直接复用 pelica 已建好的语料库（同一套明日方舟语料，无需重建）；
+# 若要独立库，改成 db = "data/kaltsit.db" 后跑 python scripts/build_db.py --db data/kaltsit.db
+db = "data/pelica.db"
+corpus_release = "agent-corpus-v2-20260916-yuexingshuishang-milu4-v2"
+
+[persona]
+file = "characters/kaltsit.persona.md"

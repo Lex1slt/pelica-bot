@@ -153,6 +153,8 @@ def main() -> int:
     args = parser.parse_args()
 
     settings = load_settings()
+    from pelica.character import apply_character
+    apply_character(settings)
     setup_logging(settings.log_dir, settings.log_level)
     settings.data_dir.mkdir(parents=True, exist_ok=True)
     db = Database(settings.db_path)
