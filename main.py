@@ -121,6 +121,34 @@ def weekly_job(settings: Settings, db: Database, bridge: Bridge,
                 log.exception("印象刷新失败：%s", row["room_id"])
 
 
+class _LinkParsers:
+    """按链接类型分发到对应平台解析器（抖音 / B 站），对管道透明。"""
+
+    def __init__(self, parsers):
+        self._parsers = parsers
+
+    @property
+    def download_dir(self):
+        return self._parsers[0].download_dir
+
+    def detect(self, text: str) -> list[str]:
+        out, seen = [], set()
+        for p in self._parsers:
+            for u in p.detect(text):
+                if u not in seen:
+                    seen.add(u)
+                    out.append(u)
+        return out[:2]
+
+    def resolve(self, url: str):
+        for p in self._parsers:
+            if p.detect(url):
+                return p.resolve(url)
+        from pelica.douyin.parser import DouyinError
+
+        raise DouyinError(f"不支持的链接：{url[:60]}")
+
+
 def greeting_job(kind: str, settings: Settings, db: Database, bridge: Bridge):
     """定时问好：向最近有动静的白名单群发一句人设问候（kind: morning/night）。"""
     zone = ZoneInfo(settings.timezone)
@@ -166,13 +194,28 @@ def main() -> int:
         bridge = build_bridge(settings, alerter)
 
     douyin = None
+    video_parsers = []
     if settings.douyin_enabled and not args.no_douyin:
-        send_image = getattr(bridge, "send_image", None)
-        douyin = DouyinPipeline(
-            parser=DouyinParser(
+        video_parsers.append(
+            DouyinParser(
                 settings.douyin_download_dir,
                 resolver_api=settings.douyin_resolver_api,
-            ),
+            )
+        )
+    if settings.bilibili_enabled:
+        from pelica.bilibili.parser import BiliParser
+
+        video_parsers.append(BiliParser(settings.douyin_download_dir))
+
+    douyin = None
+    if video_parsers:
+        send_image = getattr(bridge, "send_image", None)
+        if len(video_parsers) == 1:
+            link_parser = video_parsers[0]
+        else:
+            link_parser = _LinkParsers(video_parsers)
+        douyin = DouyinPipeline(
+            parser=link_parser,
             send_video=bridge.send_video,
             send_text=bridge.send_text,
             send_image=send_image,

@@ -43,6 +43,9 @@ class Settings:
     douyin_resolver_api: str = ""  # 可选：第三方解析服务 {api}?url=<分享链接>
     douyin_keep_hours: int = 48            # 本地视频缓存保留时长（定时清理）
 
+    # B 站
+    bilibili_enabled: bool = True
+
     # 调度
     timezone: str = "Asia/Shanghai"
     weekly_report_enabled: bool = True
@@ -128,6 +131,7 @@ def load_settings(env_file: Path | None = ..., environ: dict | None = None) -> S
         douyin_download_dir=douyin_dir,
         douyin_resolver_api=get("DOUYIN_RESOLVER_API"),
         douyin_keep_hours=int(get("DOUYIN_KEEP_HOURS", "48")),
+        bilibili_enabled=get("BILIBILI_ENABLED", "true").lower() in ("1", "true", "yes", "on"),
         timezone=get("TIMEZONE", "Asia/Shanghai"),
         weekly_report_enabled=get("WEEKLY_REPORT_ENABLED", "true").lower() in ("1", "true", "yes", "on"),
         weekly_report_weekday=get("WEEKLY_REPORT_WEEKDAY", "fri").lower(),
