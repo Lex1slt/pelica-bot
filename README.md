@@ -3,7 +3,7 @@
 基于 PRTS 语料库的明日方舟：终末地人设微信群 AI 机器人（免费 · 开源 · 本机部署）。
 
 她的微信昵称是**佩丽卡监督**，签名是「基于 PRTS 的 AI 机器人」。
-在群里像一位真人群友：被 @ 时基于 PRTS-Terrachive 语料回答明日方舟 / 终末地
+在群里像一位真人群友：被 @ 时基于 PRTS 语料回答明日方舟 / 终末地
 剧情问题；群里出现抖音链接自动解析发视频；每周五 18:00 播报群聊统计；
 不被 @ 绝不说话；不提自己是 AI——她就是佩丽卡，终末地的监督。
 
@@ -13,7 +13,7 @@
 
 ## 核心特性
 
-- 🧠 **语料图谱问答**：PRTS-Terrachive 语料（3.2 万文档 / 98 万行）+ 实体图谱 +
+- 🧠 **语料图谱问答**：PRTS 语料（3.2 万文档 / 104 万行，源自 PRTS.chat）+ 实体图谱 +
   trigram FTS + DeepSeek 生成——回答引用出处（「密录里写过」「档案里有」）
 - 💬 **人设闲聊**：「你喜欢我吗」「今天心情怎么样」以佩丽卡口吻直答，
   附带群近况感知（成员画像、长期印象、她的「近期状态」）
@@ -28,7 +28,7 @@
 
 ### Windows 一键安装（推荐）
 
-到 [Releases](../../releases) 下载两个文件：`win64-setup.zip`（代码+安装器）与
+到 [Releases](https://github.com/Lex1slt/pelica-wechat-bot/releases) 下载两个文件：`win64-setup.zip`（代码+安装器）与
 `pelica.db.zip`（预构建语料数据库）。解压后双击 `安装.bat`，按
 `快速开始-Windows.txt` 装好微信 4.1.10.27 + version.dll，双击 `启动机器人.bat` 上线。
 
@@ -92,7 +92,7 @@ python -m venv .venv
 |---|---|
 | `pelica/` | 主包（config/db/corpus/graph/retrieval/llm/pipeline/bridge/douyin/stats） |
 | `bridges/wechaty/` | 生产桥接端（Node + wechaty-puppet-padlocal，上线时 `npm install`） |
-| `corpus/releases/` | PRTS-Terrachive 语料（不入 git，服务器只读挂载） |
+| `corpus/releases/` | PRTS 语料（不入 git，`scripts/sync_corpus.py` 自动同步） |
 | `data/` | `pelica.db`（语料+图谱+消息+缓存）、抖音下载缓存、心跳文件 |
 | `scripts/` | build_db / run_mock_chat / healthcheck |
 | `deploy/` | 部署脚本（docker / bare-metal + systemd） |

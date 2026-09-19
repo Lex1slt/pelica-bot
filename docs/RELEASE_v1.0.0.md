@@ -5,7 +5,7 @@
 
 ## 她能做什么
 
-1. **全剧情问答溯源** —— 基于 PRTS-Terrachive 语料（明日方舟 + 终末地，3.2 万篇文档 / 3618 万字）+ 实体图谱检索，回答自带出处（「密录里写过」「语音里提过」）；档案里没有的绝不现编
+1. **全剧情问答溯源** —— 基于 PRTS 语料（明日方舟 + 终末地，3.2 万篇文档 / 3618 万字，源自 PRTS.chat）+ 实体图谱检索，回答自带出处（「密录里写过」「语音里提过」）；档案里没有的绝不现编
 2. **抖音全类型解析** —— 视频、图文一条链接甩进群，自动出片：文案 + 封面 + 视频/九图三连；零签名、零第三方接口，自研 Chrome TLS 指纹方案，缓存自动清理
 3. **连续对话** —— @ 一次就能连着聊（3 分钟窗口内不带 @ 的追问也接）；回复自动拆成 ≤90 字短气泡连发；聊到泰拉话题她会自己插嘴（概率 + 冷却，不刷屏）
 4. **社交记忆** —— 记得群里每个管理员最近聊过什么、对 TA 的印象如何，问候和吐槽因人而异
@@ -19,7 +19,7 @@
 | `佩丽卡监督-1.0.0-win64-setup.zip` | 代码 + 一键安装器 + version.dll（hook）。约 0.3 MB |
 | `佩丽卡监督-1.0.0-pelica.db.zip` | 预构建语料数据库（590 MB，解压后放 `data\pelica.db`）。不想自己建库就下这个 |
 
-不想下数据库？也可以自行获取 [PRTS-Terrachive](https://github.com/MizeTry/PRTS-Terrachive) 语料放进 `corpus\releases\`，运行 `python scripts/build_db.py` 自建。
+不想下数据库？也可以用 `python scripts/sync_corpus.py` 从官方镜像自动同步最新语料（真源 [PRTS.chat](https://prts.chat/agent-test)，镜像 [arknights](https://modelscope.cn/datasets/HTiantian/prts-agent-corpus-arknights) / [endfield](https://modelscope.cn/datasets/HTiantian/prts-agent-corpus-endfield)），再运行 `python scripts/build_db.py` 自建。
 
 ## 三步上线（Windows）
 
