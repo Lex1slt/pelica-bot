@@ -55,7 +55,7 @@ class DouyinPipeline:
                 sweep_old_cache(self._parser.download_dir, self._keep_hours)
             except Exception:  # noqa: BLE001
                 log.debug("缓存清理失败", exc_info=True)
-        urls = DouyinParser.detect(text)
+        urls = self._parser.detect(text)
         if not urls:
             return False
         for url in urls:

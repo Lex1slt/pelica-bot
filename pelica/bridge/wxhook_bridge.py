@@ -281,6 +281,7 @@ class WeChatHookBridge(Bridge):
 
         # 卡片/小程序消息的摘要不含 URL——去消息库取原始 XML 提取链接
         # （B 站分享卡片就是这种形态，不补链接则平台检测永远不触发）
+        ts = int(float(row.get("last_timestamp", 0) or 0))
         if "http" not in text:
             url = self._peek_message_url(username, ts)
             if url:
@@ -306,8 +307,6 @@ class WeChatHookBridge(Bridge):
             return None
 
         is_at = any(f"@{alias}" in text for alias in self._at_aliases)
-        ts = int(float(row.get("last_timestamp", 0) or 0))
-        import time as _time
         return Message(
             room_id=username,
             room_name=self._room_name(username),
@@ -315,7 +314,7 @@ class WeChatHookBridge(Bridge):
             sender_name=sender_name or sender_id,
             text=text,
             is_at=is_at,
-            ts=_time.strftime("%Y-%m-%dT%H:%M:%S", _time.localtime(ts)),
+            ts=time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(ts)),
             msg_id=f"wxh-{username}-{ts}",
         )
 
