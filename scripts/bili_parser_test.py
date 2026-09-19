@@ -89,6 +89,7 @@ def main() -> int:
     assert "索尼音乐中国" == r.author
     assert r.local_path.exists() and r.local_path.stat().st_size > 10000
     assert r.local_path.name == "bili_BV1GJ411x7h7.mp4"
+    assert r.extras.get("quiet") is True  # B 站只发视频文件，不带文案/封面
 
     print("BILI-PARSER-OK：识别/分发/解析/下载 全通过")
     return 0

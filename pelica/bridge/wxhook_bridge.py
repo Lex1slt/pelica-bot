@@ -22,8 +22,10 @@
 from __future__ import annotations
 
 import logging
+import re
 import threading
 import time
+import hashlib
 from collections import deque
 from pathlib import Path
 
@@ -32,6 +34,10 @@ import requests
 from pelica.bridge.base import Bridge, Message, MessageHandler
 
 log = logging.getLogger(__name__)
+
+_APPMSG_URL_RE = re.compile(r"<url><!\[CDATA\[(.*?)\]\]>", re.S)
+_URL_RE = re.compile(r"https?://[^\s<\"']+")
+_ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"  # 微信 4.x 消息库对 type49 内容做 zstd 压缩
 
 
 class WeChatHookError(RuntimeError):
@@ -273,6 +279,13 @@ class WeChatHookBridge(Bridge):
                     text = text[len(sender_name) + len(sep):].strip()
                     break
 
+        # 卡片/小程序消息的摘要不含 URL——去消息库取原始 XML 提取链接
+        # （B 站分享卡片就是这种形态，不补链接则平台检测永远不触发）
+        if "http" not in text:
+            url = self._peek_message_url(username, ts)
+            if url:
+                text = f"{text} {url}"
+
         # 自己发的回显：按已学到的 wxid 或刚发送的文本匹配，直接丢弃
         # （不过滤会把机器人自己的气泡当群消息记库/进社交记忆/触发自答）
         if self._self_wxid and sender_id == self._self_wxid:
@@ -307,6 +320,48 @@ class WeChatHookBridge(Bridge):
     def self_wxid(self) -> str:
         """机器人自己的 wxid（首条回显过滤后学到；学不到为空串）。"""
         return self._self_wxid
+
+    def _peek_message_url(self, room: str, ts: int) -> str:
+        """查消息库取卡片消息（type 49）原始 XML 里的链接。
+
+        内容是 zstd 压缩的 hex（WCDB 压缩），需解压；失败一律返回空串，
+        只损失「卡片消息带链接」这一个能力，不影响其他功能。
+        """
+        table = "Msg_" + hashlib.md5(room.encode()).hexdigest()
+        try:
+            rows = self._execute(
+                "message_0.db",
+                f"SELECT message_content FROM {table} "
+                f"WHERE create_time BETWEEN {int(ts) - 2} AND {int(ts) + 2} "
+                f"AND (local_type & 4294967295)=49 "
+                f"ORDER BY sort_seq DESC LIMIT 3")
+        except Exception:  # noqa: BLE001
+            return ""
+        for r in rows or []:
+            content = r.get("message_content") or ""
+            raw = (bytes.fromhex(content)
+                   if isinstance(content, str) and re.fullmatch(r"[0-9A-Fa-f]+", content)
+                   else content)
+            if isinstance(raw, str):
+                raw = raw.encode("utf-8", "ignore")
+            if raw[:4] == _ZSTD_MAGIC:
+                try:
+                    from compression.zstd import decompress  # Python 3.14+
+                except ImportError:
+                    return ""
+                try:
+                    raw = decompress(raw)
+                except Exception:  # noqa: BLE001
+                    return ""
+            text = raw.decode("utf-8", "ignore") if isinstance(raw, bytes) else raw
+            m = _APPMSG_URL_RE.search(text) or _URL_RE.search(text)
+            if m:
+                import html
+
+                url = html.unescape((m.group(1) if m.groups() else m.group(0))).strip()
+                if url.startswith("http"):
+                    return url
+        return ""
 
     def query_wechat_db(self, db_name: str, sql: str) -> list[dict] | None:
         """直查微信内部 SQLite（统计播报用）；失败返回 None 由调用方兜底。"""

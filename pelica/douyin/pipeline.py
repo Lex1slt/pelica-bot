@@ -77,6 +77,7 @@ class DouyinPipeline:
         if result.author:
             caption_parts.append(f"@{result.author}")
         caption = " ｜ ".join(caption_parts) if caption_parts else ""
+        quiet = bool(result.extras.get("quiet"))  # B 站：卡片自带标题，只发视频
         # 图文帖：先文案后逐张发图（像真人发九宫格）
         if result.local_images:
             try:
@@ -96,11 +97,13 @@ class DouyinPipeline:
             return
         try:
             if result.local_path is not None and Path(result.local_path).exists():
-                # 先发首帧缩略图（群里直接可见的视频预览）
-                thumb = self._extract_first_frame(Path(result.local_path))
-                if thumb:
-                    self._send_image(room_id, thumb)
-                self._send_video(room_id, Path(result.local_path), caption)
+                if not quiet:
+                    # 先发首帧缩略图（群里直接可见的视频预览）
+                    thumb = self._extract_first_frame(Path(result.local_path))
+                    if thumb:
+                        self._send_image(room_id, thumb)
+                self._send_video(room_id, Path(result.local_path),
+                                 caption if not quiet else "")
             else:
                 self._send_text(room_id, "视频取到了，但文件没落下来……我再试试别的办法。")
         except Exception as exc:  # noqa: BLE001 发送通道故障也不能沉默
