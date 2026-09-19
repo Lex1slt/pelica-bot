@@ -285,6 +285,9 @@ class WeChatHookBridge(Bridge):
             url = self._peek_message_url(username, ts)
             if url:
                 text = f"{text} {url}"
+                log.info("卡片/截断消息补链成功：%s -> %s", text[:40], url[:60])
+            else:
+                log.info("补链未命中（摘要前 40 字）：%s", text[:40])
 
         # 自己发的回显：按已学到的 wxid 或刚发送的文本匹配，直接丢弃
         # （不过滤会把机器人自己的气泡当群消息记库/进社交记忆/触发自答）
@@ -322,19 +325,20 @@ class WeChatHookBridge(Bridge):
         return self._self_wxid
 
     def _peek_message_url(self, room: str, ts: int) -> str:
-        """查消息库取卡片消息（type 49）原始 XML 里的链接。
+        """摘要被截断/不含 URL 时，查消息库取完整原文里的链接。
 
-        内容是 zstd 压缩的 hex（WCDB 压缩），需解压；失败一律返回空串，
-        只损失「卡片消息带链接」这一个能力，不影响其他功能。
+        覆盖两类场景：B 站卡片（type 49 的 XML <url>）、带链接的长文字消息
+        （type 1，摘要截断后 URL 丢失）。内容可能是 zstd 压缩的 hex
+        （WCDB 压缩），需解压；失败一律返回空串，只损失链接补全能力。
         """
         table = "Msg_" + hashlib.md5(room.encode()).hexdigest()
         try:
             rows = self._execute(
                 "message_0.db",
-                f"SELECT message_content FROM {table} "
-                f"WHERE create_time BETWEEN {int(ts) - 2} AND {int(ts) + 2} "
-                f"AND (local_type & 4294967295)=49 "
-                f"ORDER BY sort_seq DESC LIMIT 3")
+                f"SELECT local_type, message_content FROM {table} "
+                f"WHERE create_time BETWEEN {int(ts) - 10} AND {int(ts) + 10} "
+                f"AND ((local_type & 4294967295)=1 OR (local_type & 4294967295)=49) "
+                f"ORDER BY sort_seq DESC LIMIT 8")
         except Exception:  # noqa: BLE001
             return ""
         for r in rows or []:
