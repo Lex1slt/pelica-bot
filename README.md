@@ -1,4 +1,4 @@
-# 佩丽卡监督 (Pelica Bot)
+# 佩丽卡监督 (Pelica WeChat Bot)
 
 基于 PRTS 语料库的明日方舟：终末地人设微信群 AI 机器人（免费 · 开源 · 本机部署）。
 

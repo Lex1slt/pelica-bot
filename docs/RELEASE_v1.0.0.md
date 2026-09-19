@@ -32,7 +32,7 @@
 
 日志出现「WeChat-Hook 桥接激活」即上线。没有微信也能玩：双击 `mock体验.bat` 本机体验完整对话。
 
-详见包内 `快速开始-Windows.txt` 与 [README](https://github.com/<你的用户名>/<仓库名>#readme)。
+详见包内 `快速开始-Windows.txt` 与 [README](https://github.com/Lex1slt/pelica-wechat-bot#readme)。
 
 ## 环境要求
 
