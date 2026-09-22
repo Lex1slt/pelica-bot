@@ -73,6 +73,7 @@ class GroupBot:
         at_aliases: list[str],
         social=None,
         matcher=None,
+        private_whitelist: list[str] | None = None,
     ):
         self._bridge = bridge
         self._db = db
@@ -82,6 +83,7 @@ class GroupBot:
         self._social = social
         self._matcher = matcher
         self._whitelist = [w for w in (whitelist or [])]
+        self._private_whitelist = [w for w in (private_whitelist or [])]
         self._at_aliases = at_aliases
         self._queue: queue.Queue[Message | None] = queue.Queue()
         self._worker = threading.Thread(target=self._work, daemon=True, name="groupbot")
@@ -117,6 +119,13 @@ class GroupBot:
         self._queue.put(msg)
 
     def _allowed(self, msg: Message) -> bool:
+        """群聊白名单（未配置=全部放行）+ 私聊白名单（未配置=私聊关闭）。"""
+        if not msg.room_id.endswith("@chatroom"):
+            if not self._private_whitelist:
+                return False  # 默认不开私聊
+            return (msg.sender_id in self._private_whitelist
+                    or msg.sender_name in self._private_whitelist
+                    or msg.room_id in self._private_whitelist)
         if not self._whitelist:
             return True  # 未配置白名单：全放行（仅建议开发环境）
         return msg.room_name in self._whitelist or msg.room_id in self._whitelist

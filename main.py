@@ -107,7 +107,8 @@ def weekly_job(settings: Settings, db: Database, bridge: Bridge,
     until = now.strftime("%Y-%m-%dT%H:%M:%S")
     since = (now - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%S")
     rooms = db.query(
-        "SELECT DISTINCT room_id, room_name FROM messages WHERE ts >= ?", (since,)
+        "SELECT DISTINCT room_id, room_name FROM messages"
+        " WHERE ts >= ? AND room_id LIKE '%@chatroom'", (since,)
     )
     for row in rooms:
         report = build_weekly_report(db, bridge, row["room_id"], row["room_name"], since, until)
@@ -156,7 +157,8 @@ def greeting_job(kind: str, settings: Settings, db: Database, bridge: Bridge):
         "%Y-%m-%dT%H:%M:%S"
     )
     rooms = db.query(
-        "SELECT DISTINCT room_id, room_name FROM messages WHERE ts >= ?", (since,)
+        "SELECT DISTINCT room_id, room_name FROM messages"
+        " WHERE ts >= ? AND room_id LIKE '%@chatroom'", (since,)
     )
     text = persona.pick(persona.GREETING_MORNING if kind == "morning" else persona.GREETING_NIGHT)
     for row in rooms:
@@ -233,6 +235,7 @@ def main() -> int:
         qa_cache=QACache(db),
         douyin=douyin,
         whitelist=settings.group_whitelist,
+        private_whitelist=settings.private_whitelist,
         at_aliases=settings.at_aliases,
         social=social_memory,
         matcher=EntityMatcher(db),

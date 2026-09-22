@@ -262,18 +262,19 @@ class WeChatHookBridge(Bridge):
         if not username or not summary:
             return None
 
-        # 会话类型：contact.db name2id 里非群联系人的 username 不以 @chatroom 结尾；
-        # 群聊 username 形如 xxxxx@chatroom
+        # 会话类型：群聊 username 形如 xxxxx@chatroom；其余为私聊/官方号
         is_room = username.endswith("@chatroom")
         sender_id = row.get("last_msg_sender", "") or ""
         sender_name = row.get("last_sender_display_name", "") or ""
-        if not is_room:
-            return None  # 只处理群消息（私聊机器人 v1 不开启）
+        if username == "filehelper":
+            return None  # 文件传输助手是自己的记事本，不当作对话
+        if not is_room and not sender_id:
+            sender_id = username  # 私聊里对方就是会话本身
 
         # 群消息的 summary 常带「发送人：内容」前缀——只在发送人与前缀吻合时剥掉
         #（避免把恰好含冒号的正文误伤），发送人已有独立字段
         text = summary
-        if sender_name and text.startswith(sender_name):
+        if is_room and sender_name and text.startswith(sender_name):
             for sep in ("：", ":"):
                 if text.startswith(sender_name + sep):
                     text = text[len(sender_name) + len(sep):].strip()
@@ -306,7 +307,19 @@ class WeChatHookBridge(Bridge):
                         pass
             return None
 
-        is_at = any(f"@{alias}" in text for alias in self._at_aliases)
+        is_at = any(f"@{alias}" in text for alias in self._at_aliases) if is_room else True
+        # 私聊即直聊：is_at=True 让路由跳过 @/窗口/插话规则（白名单在路由层把关）
+        if not is_room:
+            return Message(
+                room_id=username,
+                room_name=sender_name or username,  # 私聊没有群名，用对方昵称
+                sender_id=sender_id,
+                sender_name=sender_name or username,
+                text=text,
+                is_at=True,
+                ts=time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(ts)),
+                msg_id=f"wxh-{username}-{ts}",
+            )
         return Message(
             room_id=username,
             room_name=self._room_name(username),

@@ -30,6 +30,7 @@ class Settings:
     wechaty_token: str = ""
     bot_wxid: str = ""
     group_whitelist: list[str] = field(default_factory=list)
+    private_whitelist: list[str] = field(default_factory=list)  # 空=私聊关闭
     at_aliases: list[str] = field(default_factory=lambda: ["佩丽卡监督", "佩丽卡", "Pelica"])
 
     # 路径
@@ -123,6 +124,7 @@ def load_settings(env_file: Path | None = ..., environ: dict | None = None) -> S
         wechaty_token=get("WECHATY_TOKEN"),
         bot_wxid=get("BOT_WXID"),
         group_whitelist=_split_csv(get("GROUP_WHITELIST")),
+        private_whitelist=_split_csv(get("PRIVATE_WHITELIST")),
         at_aliases=_split_csv(get("AT_ALIASES", "佩丽卡监督,佩丽卡,Pelica")) or ["佩丽卡"],
         corpus_dir=corpus_dir,
         data_dir=data_dir,
