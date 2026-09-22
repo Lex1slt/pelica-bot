@@ -58,10 +58,12 @@ def apply_character(settings: Settings) -> Settings:
     if persona_file:
         md_path = ROOT / persona_file
         system_text = md_path.read_text(encoding="utf-8")
+        source_phrases = persona_cfg.get("source_phrases") or None
         persona.apply_character(
             name=name,
             signature=signature,
             system_text=_render_persona(system_text, name, signature),
+            source_phrases=source_phrases,
         )
 
     settings.character_pack = {

@@ -1,0 +1,26 @@
+# 派蒙角色包（原神）。语料来自 gi.yatta.moe 数据 API（随游戏版本更新）。
+# 构建：python scripts/build_db_genshin.py --db data/paimon.db
+# 启用：.env 设 CHARACTER=paimon
+
+[character]
+id = "paimon"
+display_name = "派蒙"
+wechat_name = "派蒙"
+signature = "旅行者最好的伙伴（不是应急食品）"
+at_aliases = ["派蒙", "Paimon", "应急食品"]   # 喊「应急食品」也会触发（先抗议再回答）
+db = "data/paimon.db"
+corpus_release = "genshin-v1"                  # 由 build_db_genshin.py 生成（按构建日期命名，取最新）
+
+[persona]
+file = "characters/paimon.persona.md"
+# 出处话术：剧情引用按提瓦特世界观切换（原神没有「密录/档案」，只有任务与见闻）
+source_phrases = [
+    ["任务", "做任务的时候见过"],
+    ["传说任务", "传说任务里讲到过"],
+    ["邀约", "邀约事件里遇到过"],
+    ["对话", "剧情对话里有"],
+    ["角色档案", "之前打听过"],
+    ["档案", "之前打听过"],
+    ["知识", "听别人说过"],
+    ["剧情概括", "一路听下来是这么回事"],
+]

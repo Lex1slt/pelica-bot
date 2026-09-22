@@ -27,6 +27,8 @@ from main import build_answerer, build_bridge  # noqa: E402
 
 def main() -> int:
     settings = load_settings()
+    from pelica.character import apply_character
+    apply_character(settings)  # CHARACTER=<id> 加载对应角色包（人设/别名/专用库）
     setup_logging(settings.log_dir, settings.log_level)
     db = Database(settings.db_path)
     bridge = build_bridge(settings, Alerter())
