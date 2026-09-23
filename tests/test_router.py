@@ -4,12 +4,37 @@ from __future__ import annotations
 
 import time
 
+from pelica.bridge.base import Message
 from pelica.bridge.mock_bridge import MockBridge
 from pelica.db import Database
 from pelica.douyin.pipeline import DouyinPipeline
 from pelica.llm import persona
 from pelica.pipeline.router import GroupBot, REPLY_COOLDOWN_ROOM, REPLY_COOLDOWN_SENDER
 from pelica.retrieval.cache import QACache
+
+
+class ChatroomMockBridge(MockBridge):
+    """群聊语义的 mock 桥：room_id 带 @chatroom 后缀。
+
+    私聊白名单闸上线后（2a4e8d5），_allowed 只把 @chatroom 结尾的房间当群聊；
+    mock 默认房间名不带后缀会被当成私聊丢弃。本子类保持 room_name 干净，
+    让按群名匹配的白名单语义不变。
+    """
+
+    def feed(self, text, room="测试群", sender="测试用户", is_at=True,
+             sender_id="mock-sender"):
+        msg = Message(
+            room_id=f"mockroom::{room}@chatroom",
+            room_name=room,
+            sender_id=sender_id,
+            sender_name=sender,
+            text=text,
+            is_at=is_at,
+            ts=time.strftime("%Y-%m-%dT%H:%M:%S"),
+            msg_id=f"mock-{time.time_ns()}",
+        )
+        if self._handler is not None:
+            self._handler(msg)
 
 
 class StubAnswerer:
@@ -45,7 +70,7 @@ class StubDouyin(DouyinPipeline):
 
 
 def make_bot(db: Database, whitelist=None, answerer=None, douyin=None):
-    bridge = MockBridge(echo=False)
+    bridge = ChatroomMockBridge(echo=False)
     answerer = answerer or StubAnswerer()
     bot = GroupBot(
         bridge=bridge, db=db, answerer=answerer, qa_cache=QACache(db),
@@ -111,7 +136,9 @@ def test_identity_question_no_llm(db: Database):
     bridge, bot, answerer = make_bot(db)
     feed_and_drain(bot, bridge, text="@佩丽卡 你是真人吗", is_at=True)
     assert answerer.calls == 0
-    assert any("佩丽卡" in o["text"] and "我就是" in o["text"] for o in bridge.outbox)
+    # REPLY_IDENTITY 有多个随机变体，断言覆盖全集（不写死某一句）
+    texts = [o["text"] for o in bridge.outbox]
+    assert any(t in persona.REPLY_IDENTITY for t in texts), f"应回复身份话术变体，实际: {texts}"
     bot.stop()
 
 

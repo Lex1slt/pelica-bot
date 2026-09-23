@@ -4,3 +4,9 @@ tzdata>=2024.1
 jieba>=0.42.1
 curl_cffi>=0.7
 opencv-python-headless>=4.9
+
+# Pelica Console 网关（v1.1.0 起控制台需要；打包用 pyinstaller）
+fastapi>=0.115
+uvicorn[standard]>=0.34
+httpx>=0.28
+pyinstaller>=6.11

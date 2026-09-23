@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from pelica.db import Database
@@ -14,20 +13,27 @@ from pelica.social import SocialMemory
 
 
 def _seed(db: Database, room_id="room-1"):
-    """构造一周的群消息：阿测试（夜猫子、@多）、小李（白天）。"""
-    zone = ZoneInfo("Asia/Shanghai")
-    base = datetime(2026, 9, 17, 12, 0, tzinfo=zone)
-    from pelica.social import _ts
+    """构造一周内的群消息：阿测试（夜猫子、@多）、小李（白天）。
 
+    时间相对「现在」动态生成（而非写死日期），避免测试跨过
+    member_profile 的 7 天滑动窗口边界后种子掉出窗口（时间敏感缺陷）。
+    """
+    zone = ZoneInfo("Asia/Shanghai")
+    now = datetime.now(zone)
+
+    # 两个种子时点：两天前的 14:00（白天）与三天前的 02:00（深夜）
+    day_white = (now - timedelta(days=2)).replace(
+        hour=14, minute=0, second=0, microsecond=0)
+    day_night = (now - timedelta(days=3)).replace(
+        hour=2, minute=0, second=0, microsecond=0)
     rows = []
     for i in range(6):  # 阿测试：白天 3 句 + 凌晨 3 句，@ 4 次
-        day_offset = i % 2
-        hour = 14 if i % 2 == 0 else 2
-        ts = base.replace(day=base.day - day_offset, hour=hour).strftime("%Y-%m-%dT%H:%M:%S")
-        rows.append(("阿测试", f"第{i}句话，聊聊源石技艺", 1 if i % 2 == 0 else 1, ts))
+        ts = (day_white if i % 2 == 0 else day_night).strftime("%Y-%m-%dT%H:%M:%S")
+        rows.append(("阿测试", f"第{i}句话，聊聊源石技艺", 1, ts))
+    day_li = (now - timedelta(days=2)).replace(
+        hour=15, minute=0, second=0, microsecond=0)
     for i in range(4):  # 小李：白天，不 @
-        ts = base.replace(hour=15).strftime("%Y-%m-%dT%H:%M:%S")
-        rows.append(("小李", f"白天的闲聊{i}", 0, ts))
+        rows.append(("小李", f"白天的闲聊{i}", 0, day_li.strftime("%Y-%m-%dT%H:%M:%S")))
     for sender, text, is_at, ts in rows:
         db.execute(
             "INSERT INTO messages(room_id,room_name,sender_id,sender_name,ts,is_at,kind,text)"
@@ -56,7 +62,9 @@ def test_member_profile_night_owl(db: Database):
 def test_self_state_by_hour_and_volume(db: Database):
     _seed(db)
     sm = SocialMemory(db)
-    late = datetime(2026, 9, 18, 2, 0, tzinfo=ZoneInfo("Asia/Shanghai"))
+    # 深夜时点相对「现在」取（昨天 02:00），保证落在种子消息之后且在窗口内
+    late = (datetime.now(ZoneInfo("Asia/Shanghai")) - timedelta(days=1)).replace(
+        hour=2, minute=0, second=0, microsecond=0)
     state = sm.self_state("room-1", now=late)
     assert "深夜" in state
     assert "近况" in state

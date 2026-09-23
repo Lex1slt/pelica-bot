@@ -26,11 +26,27 @@
 
 ## 快速开始
 
-### Windows 一键安装（推荐）
+### Windows 图形控制台（v1.1.0 起，非开发者推荐）
+
+下载 `pelica-console-1.1.0-x64-setup.exe` 双击安装（自包含，零 Python 依赖）：
+
+1. 开始菜单启动「Pelica Console」，按 8 步向导走完首次配置（风险确认 → 选角色 → 填 Key → 沙箱试聊 → 启用群）；
+2. 沙箱发一句 `@佩丽卡 你好`，收到角色化回复即配置成功；
+3. 仪表盘一键启动机器人，托盘常驻（运行/静默/离线三态），关闭窗口即最小化到托盘。
+
+密钥以 Windows DPAPI 密文存于 `%APPDATA%\pelica-console\config.db`，界面/日志/导出全程掩码；
+已有 v1.0.0 用户首启会自动导入仓库 `.env`（密钥转密文），CLI 用法不受影响。
+截图见 `docs/screenshots/`（向导、仪表盘、沙箱、命令面板）。
+
+### Windows 一键安装（CLI 形态，v1.0.0 起）
 
 到 [Releases](https://github.com/Lex1slt/pelica-wechat-bot/releases) 下载两个文件：`win64-setup.zip`（代码+安装器）与
 `pelica.db.zip`（预构建语料数据库）。解压后双击 `安装.bat`，按
 `快速开始-Windows.txt` 装好微信 4.1.10.27 + version.dll，双击 `启动机器人.bat` 上线。
+
+### 控制台开发入口（本项目开发者）
+
+仓库根双击 **`控制台.bat`**：`.venv` 直跑网关（127.0.0.1:8765 + token 注入）+ Vite 开发服务器 + 自动开浏览器（http://localhost:5179）。改前端代码热更新；`gateway/` 是 FastAPI 网关源码，`console/` 是 React 前端，`console/src-tauri/` 是 Tauri 壳。发布包构建：`python scripts/package_console.py`。
 
 ### 开发者路径（本机 mock 模式，不登录微信）
 

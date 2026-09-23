@@ -33,7 +33,7 @@ def test_weekly_report_top3(db: Database):
     now = datetime.now(ZoneInfo("Asia/Shanghai"))
     since = (now - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%S")
     until = now.strftime("%Y-%m-%dT%H:%M:%S")
-    report = build_weekly_report(db, "room-1", "测试群", since, until)
+    report = build_weekly_report(db, None, "room-1", "测试群", since, until)
     assert report is not None
     assert "阿测试" in report and "小李" in report and "老王" in report
     # 佩丽卡口吻：有结尾礼貌语；不出现机器腔
@@ -45,7 +45,7 @@ def test_weekly_report_empty_room(db: Database):
     now = datetime.now(ZoneInfo("Asia/Shanghai"))
     since = (now - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%S")
     until = now.strftime("%Y-%m-%dT%H:%M:%S")
-    assert build_weekly_report(db, "no-such-room", "空群", since, until) is None
+    assert build_weekly_report(db, None, "no-such-room", "空群", since, until) is None
 
 
 def test_next_run_friday():

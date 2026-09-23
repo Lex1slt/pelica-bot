@@ -126,5 +126,5 @@ def test_router_history_survives_uncovered_followup(db: Database):
     bot._queue.join()
 
     assert any("顺着刚才" in o["text"] for o in bridge.outbox), "追问应得到续聊回复"
-    assert len(bot._history["mockroom::测试群"]) == 2, "追问回复也应进入群记忆"
+    assert len(bot._history["mockroom::测试群@chatroom"]) == 2, "追问回复也应进入群记忆"
     bot.stop()

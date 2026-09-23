@@ -82,10 +82,13 @@ def test_session_row_to_message():
     assert msg.is_at is True
 
 
-def test_session_row_skips_non_group_and_empty():
+def test_session_row_private_chat_and_empty():
+    """私聊会话行也产出 Message（私聊放行后为预期行为）；空摘要仍跳过。"""
     bridge, _ = make_bridge()
     row = dict(SESSION_ROW, username="wxid_friend")
-    assert bridge._session_row_to_message(row) is None
+    msg = bridge._session_row_to_message(row)
+    assert msg is not None  # 私聊（直聊）行进入管道，由私聊白名单决定去留
+    assert msg.room_id == "wxid_friend"
     row2 = dict(SESSION_ROW, summary="")
     assert bridge._session_row_to_message(row2) is None
 

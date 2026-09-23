@@ -47,3 +47,12 @@ NIGHT_REPORT.md
 vendor/
 requirements-windows.txt
 start_wechat_hook.bat
+
+# Pelica Console 构建产物（v1.1.0）
+console/node_modules/
+console/dist/
+console/src-tauri/target/
+console/src-tauri/gen/
+gateway-dist/
+build/
+nohup.out
